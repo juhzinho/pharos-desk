@@ -1,6 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { decodeRevert, functionName, isTxHash, outOfGas, plainReason, reasonFromMessage, receiptFailed, revertDataFromError } from "../lib/revert.js";
+import { txPresent } from "../lib/support.js";
+
+test("an empty chain record is not a transaction", () => {
+  assert.equal(txPresent(null), false);
+  assert.equal(txPresent({}), false);
+  assert.equal(txPresent({ result: null }), false);
+  assert.equal(txPresent({ from: "0xabc", hash: "0x" + "ab".repeat(32) }), true);
+});
 
 test("tx hash shape", () => {
   assert.equal(isTxHash("0x" + "ab".repeat(32)), true);

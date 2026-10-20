@@ -3,6 +3,10 @@
   "buildCommand": "",
   "outputDirectory": "public",
   "functions": {
-    "api/*.js": { "maxDuration": 60 }
-  }
+    "api/*.js": { "maxDuration": 60 },
+    "api/watch.js": { "maxDuration": 60, "memory": 128 }
+  },
+  "crons": [
+    { "path": "/api/watch", "schedule": "0 15 * * *" }
+  ]
 }
