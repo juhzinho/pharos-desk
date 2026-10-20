@@ -132,6 +132,8 @@ test("telegram commands match the site scans", () => {
   assert.match(card, /Variação 7d:/);
   assert.equal(renderPriceChart([0.62, 0.63, 0.61]).slice(0, 4).toString("hex"), "89504e47");
   assert.equal(parseTelegramCommand("/pros").kind, "pros");
+  assert.equal(parseTelegramCommand("/support").kind, "ask-support");
+  assert.equal(parseTelegramCommand("/support 0x" + "ab".repeat(32)).kind, "support");
   assert.equal(parseLangChoice("/lang").kind, "ask-lang");
   assert.equal(parseFollowUp("abajo", { step: "side", price: "0.62" }).side, "below");
 });
