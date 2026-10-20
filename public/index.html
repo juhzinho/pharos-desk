@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pharos Desk</title>
-  <meta name="description" content="Docs MCP onboarding log, on-chain alerts, failed-tx support. Pharos Pacific. Read-only." />
+  <meta name="description" content="On-chain alerts and failed-tx support. Pharos Pacific. Read-only." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -57,7 +57,7 @@
     .kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 600; }
     h1 { font-size: clamp(40px, 6vw, 64px); line-height: .95; text-transform: uppercase; letter-spacing: -.04em; margin: 0 0 12px; color: var(--brand); }
     .lead { color: var(--muted); max-width: 52ch; }
-    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0; }
+    .board { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 28px 0; }
     .tile { display: flex; flex-direction: column; gap: 12px; min-height: 200px; background: var(--card); border-radius: 8px; padding: 22px; color: inherit; text-decoration: none; }
     .cat { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
     .tile h3 { margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; }
@@ -99,7 +99,6 @@
       <span><b>PHAROS</b><em>DESK</em></span>
     </a>
     <nav class="tabs">
-      <a href="#onboard" data-tab="onboard">Onboard</a>
       <a href="#alerts" data-tab="alerts">Alerts</a>
       <a href="#support" data-tab="support">Support</a>
     </nav>
@@ -113,22 +112,9 @@
     <h1 id="title"></h1>
     <p class="lead" id="lead"></p>
     <div class="board" data-panel="home">
-      <a class="tile" href="#onboard"><span class="cat">Docs MCP</span><h3>Onboard</h3><p id="t1"></p></a>
       <a class="tile" href="#alerts"><span class="cat">Chain MCP</span><h3>Alerts</h3><p id="t2"></p></a>
       <a class="tile" href="#support"><span class="cat">Chain MCP</span><h3>Support</h3><p id="t3"></p></a>
     </div>
-
-    <section class="card" data-panel="onboard">
-      <h2 id="onForm"></h2>
-      <p class="lead" id="onBlurb"></p>
-      <button class="btn" id="onGo" type="button"></button>
-      <p class="status" id="onStatus"></p>
-    </section>
-    <section class="card" data-panel="onboard" id="onOut" hidden>
-      <h2 id="onLog"></h2>
-      <p id="onHead"></p>
-      <div id="onSteps"></div>
-    </section>
 
     <section class="card" data-panel="alerts">
       <h2 id="alForm"></h2>
@@ -193,19 +179,14 @@
       <div id="suLines"></div>
     </section>
   </main>
-  <footer>Pacific 1672 · Docs MCP + Chain MCP · read-only</footer>
+  <footer>Pacific 1672 · Chain MCP · read-only</footer>
   <script>
     const I = {
       en: {
         title: "Desk",
-        lead: "Three Easy tasks: onboard with Docs MCP only, watch chain alerts, and explain a failed tx.",
-        t1: "Ask the official docs how to land on AI.PHAROS. Log where they go silent.",
+        lead: "Two Easy tasks: watch chain alerts, and explain a failed tx.",
         t2: "Large USDC moves, a WPROS price cross, or one FaroSwap function.",
         t3: "Paste a Pacific hash. I say if it failed, why, and what it tried to do.",
-        onForm: "Docs MCP onboarding",
-        onBlurb: "Six questions, Docs MCP only. Covered / thin / broke. No invented pages.",
-        onGo: "Run the log",
-        onLog: "Where it broke",
         alForm: "On-chain alerts",
         alModeL: "Condition",
         alMinL: "Min amount",
@@ -224,14 +205,9 @@
       },
       pt: {
         title: "Mesa",
-        lead: "Três tasks Easy: onboard só com Docs MCP, alertas on-chain, e explicar tx que falhou.",
-        t1: "Pergunta na docs oficial como entrar no AI.PHAROS. Anota onde ela some.",
+        lead: "Duas tasks Easy: alertas on-chain e explicar tx que falhou.",
         t2: "USDC grande, cruzamento do preço do WPROS, ou uma função do FaroSwap.",
         t3: "Cola um hash da Pacific. Eu digo se falhou, por quê, e o que ela tentou fazer.",
-        onForm: "Onboarding Docs MCP",
-        onBlurb: "Seis perguntas, só Docs MCP. Coberto / frouxo / quebrou. Sem inventar página.",
-        onGo: "Rodar o log",
-        onLog: "Onde quebrou",
         alForm: "Alertas on-chain",
         alModeL: "Condição",
         alMinL: "Mínimo",
@@ -256,8 +232,7 @@
       document.documentElement.lang = lang;
       $("title").textContent = t.title;
       $("lead").textContent = t.lead;
-      $("t1").textContent = t.t1; $("t2").textContent = t.t2; $("t3").textContent = t.t3;
-      $("onForm").textContent = t.onForm; $("onBlurb").textContent = t.onBlurb; $("onGo").textContent = t.onGo; $("onLog").textContent = t.onLog;
+      $("t2").textContent = t.t2; $("t3").textContent = t.t3;
       $("alForm").textContent = t.alForm; $("alModeL").textContent = t.alModeL; $("alMinL").textContent = t.alMinL; $("alPriceL").textContent = t.alPriceL; $("alSideL").textContent = t.alSideL; $("alContractL").textContent = t.alContractL; $("alSelectorL").textContent = t.alSelectorL; $("alGo").textContent = t.alGo; $("alBot").textContent = t.alBot; $("alLog").textContent = t.alLog;
       $("suForm").textContent = t.suForm; $("suTxL").textContent = t.suTxL; $("suGo").textContent = t.suGo; $("suLog").textContent = t.suLog;
       document.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
@@ -270,13 +245,13 @@
       document.querySelectorAll("[data-panel]").forEach((el) => {
         const p = el.dataset.panel;
         el.hidden = tab === "home" ? p !== "home" : p !== tab;
-        if (el.id === "onOut" || el.id === "alOut" || el.id === "suOut") el.hidden = true;
+        if (el.id === "alOut" || el.id === "suOut") el.hidden = true;
       });
       document.querySelectorAll("nav a[data-tab]").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
     }
     function route() {
       const tab = (location.hash || "#home").slice(1) || "home";
-      showTab(["home","onboard","alerts","support"].includes(tab) ? tab : "home");
+      showTab(["home","alerts","support"].includes(tab) ? tab : "home");
     }
     async function getJson(url, statusEl) {
       statusEl.className = "status";
@@ -287,21 +262,6 @@
       statusEl.textContent = data.calls ? data.calls : "";
       return data;
     }
-    $("onGo").onclick = async () => {
-      try {
-        const data = await getJson("/api/onboard?lang=" + lang, $("onStatus"));
-        $("onOut").hidden = false;
-        $("onHead").textContent = data.headline;
-        const steps = data.steps || [];
-        const gaps = data.gaps || [];
-        const log = steps.map((s, i) => {
-          const src = (s.sources || []).slice(0, 3).map((x) => `<a href="${x.url}" target="_blank" rel="noreferrer">${x.title}</a>`).join(" · ");
-          return `<div class="step"><span class="kind ${s.grade}">${i + 1} ${s.grade}</span><p><b>${s.tried || ""}</b></p><p>Query: ${s.query || s.title}</p><p>${(s.answer || "").slice(0, 700)}</p>${src ? `<p>${src}</p>` : ""}</div>`;
-        }).join("");
-        const gapHtml = gaps.map((g, i) => `<div class="step"><span class="kind broke">${i + 1}</span><p>Query: ${g.query}</p><p>${g.problem || ""}</p><p><b>${lang === "pt" ? "A docs deveria ter dito:" : "Docs should have said:"}</b> ${g.fix || ""}</p></div>`).join("");
-        $("onSteps").innerHTML = log + `<h2>${lang === "pt" ? "Buracos" : "Gaps"}</h2>` + gapHtml + `<h2>${lang === "pt" ? "O que rodou" : "What ran"}</h2><p>${data.ran || ""}</p>`;
-      } catch (e) { $("onStatus").className = "status err"; $("onStatus").textContent = e.message; }
-    };
     const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     function syncAlertFields() {
       const mode = $("alMode").value;
