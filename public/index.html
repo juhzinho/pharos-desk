@@ -201,7 +201,7 @@
         lead: "Three Easy tasks: onboard with Docs MCP only, watch chain alerts, and explain a failed tx.",
         t1: "Ask the official docs how to land on AI.PHAROS. Log where they go silent.",
         t2: "Large USDC moves, a WPROS price cross, or one FaroSwap function.",
-        t3: "Paste a Pacific hash. Status, revert, who sent it.",
+        t3: "Paste a Pacific hash. I say if it failed, why, and what it tried to do.",
         onForm: "Docs MCP onboarding",
         onBlurb: "Six questions, Docs MCP only. Covered / thin / broke. No invented pages.",
         onGo: "Run the log",
@@ -227,7 +227,7 @@
         lead: "Três tasks Easy: onboard só com Docs MCP, alertas on-chain, e explicar tx que falhou.",
         t1: "Pergunta na docs oficial como entrar no AI.PHAROS. Anota onde ela some.",
         t2: "USDC grande, cruzamento do preço do WPROS, ou uma função do FaroSwap.",
-        t3: "Cola um hash da Pacific. Status, revert, quem mandou.",
+        t3: "Cola um hash da Pacific. Eu digo se falhou, por quê, e o que ela tentou fazer.",
         onForm: "Onboarding Docs MCP",
         onBlurb: "Seis perguntas, só Docs MCP. Coberto / frouxo / quebrou. Sem inventar página.",
         onGo: "Rodar o log",
@@ -318,8 +318,10 @@
         const sent = data.delivery?.sent || 0;
         const channels = (data.delivery?.channels || []).join(", ");
         if (data.delivery?.error) $("alStatus").textContent = data.delivery.error;
-        else if (channels) $("alStatus").textContent = `${channels} · ${sent}`;
-        const quiet = lang === "pt" ? "Nada novo." : "Nothing new.";
+        else if (sent > 0 && channels) $("alStatus").textContent = `${channels} · ${sent}`;
+        const quiet = data.mode === "price"
+          ? (lang === "pt" ? "Nenhum alerta. O preço não cruzou a linha." : "No alert. The price did not cross the line.")
+          : (lang === "pt" ? "Nada novo nesta janela." : "Nothing new in this window.");
         $("alList").innerHTML = (data.alerts || []).map((a) =>
           `<div class="alert"><span class="kind ${esc(a.kind)}">${esc(a.kind)}</span> ${esc(a.line)} <b>${esc(a.value || "")}</b>${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noreferrer">${a.tx ? "tx" : "pool"}</a>` : ""}</div>`
         ).join("") || `<p class="status">${quiet}</p>`;

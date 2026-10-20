@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decodeSlot0, inputSelector, normalizeSelector, parseMin, parseMode, parseThreshold, pickTransfers, priceCrossed, priceJustCrossed, resolveToken, sqrtToPrice, wprosUsdcPrice } from "../lib/alerts.js";
+import { decodeSlot0, inputSelector, normalizeSelector, parseMin, parseMode, parseThreshold, pickTransfers, priceCrossed, priceJustCrossed, priceStatus, resolveToken, sqrtToPrice, wprosUsdcPrice } from "../lib/alerts.js";
 import { alertText, channelsFromEnv, deliver, freshAlerts, remember } from "../lib/notify.js";
 import { formatWatchList, parseFollowUp, parseHome, parseLangChoice, parseTelegramCommand } from "../lib/telegram.js";
 import { formatProsCard, prosFromCmc, renderPriceChart } from "../lib/pros.js";
@@ -26,6 +26,13 @@ test("a blank price is rejected and does not become zero", () => {
   assert.equal(parseThreshold("").error, "bad-price");
   assert.equal(parseThreshold("  ").error, "bad-price");
   assert.equal(parseThreshold("0.05").value, 0.05);
+});
+
+test("a price check says which side of the line the spot is on", () => {
+  assert.match(priceStatus(0.612664, 0.66, "above", false, "en"), /below 0\.66/);
+  assert.match(priceStatus(0.612664, 0.66, "above", false, "pt"), /abaixo de 0\.66/);
+  assert.match(priceStatus(0.7, 0.66, "above", false, "en"), /already above/);
+  assert.match(priceStatus(0.67, 0.66, "above", true, "en"), /just crossed/);
 });
 
 test("a price alert fires on the cross, not while it is already past the line", () => {
