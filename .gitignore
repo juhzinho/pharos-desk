@@ -1,6 +1,8 @@
 node_modules/
 .env
+.env.*
 .vercel
 scripts/scan-port-js.js
 videos/
 data/
+.env*

@@ -4,5 +4,8 @@
   "outputDirectory": "public",
   "functions": {
     "api/*.js": { "maxDuration": 60 }
-  }
+  },
+  "crons": [
+    { "path": "/api/watch", "schedule": "* * * * *" }
+  ]
 }

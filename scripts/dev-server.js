@@ -9,23 +9,26 @@ import { applyEnvFile } from "../lib/notify.js";
 import { checkPriceWatches, handleTelegramUpdates, publishTelegramCommands, publishTelegramProfile, pushMenu } from "../lib/telegram.js";
 
 await applyEnvFile(new URL("../.env", import.meta.url));
-publishTelegramCommands().catch(() => {});
-publishTelegramProfile().catch(() => {});
-pushMenu().catch(() => {});
-let telegramBusy = false;
-setInterval(() => {
-  if (telegramBusy) return;
-  telegramBusy = true;
-  handleTelegramUpdates().catch(() => {}).finally(() => { telegramBusy = false; });
-}, 4000);
-let watchBusy = false;
-const watchTick = () => {
-  if (watchBusy) return;
-  watchBusy = true;
-  checkPriceWatches().catch(() => {}).finally(() => { watchBusy = false; });
-};
-watchTick();
-setInterval(watchTick, 30000);
+await applyEnvFile(new URL("../.env.local", import.meta.url));
+if (process.env.BOT_RUNTIME !== "cloud") {
+  publishTelegramCommands().catch(() => {});
+  publishTelegramProfile().catch(() => {});
+  pushMenu().catch(() => {});
+  let telegramBusy = false;
+  setInterval(() => {
+    if (telegramBusy) return;
+    telegramBusy = true;
+    handleTelegramUpdates().catch(() => {}).finally(() => { telegramBusy = false; });
+  }, 4000);
+  let watchBusy = false;
+  const watchTick = () => {
+    if (watchBusy) return;
+    watchBusy = true;
+    checkPriceWatches().catch(() => {}).finally(() => { watchBusy = false; });
+  };
+  watchTick();
+  setInterval(watchTick, 30000);
+}
 
 const PORT = Number(process.env.PORT ?? 3000);
 const ROOT = fileURLToPath(new URL("../public/", import.meta.url));
