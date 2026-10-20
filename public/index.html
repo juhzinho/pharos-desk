@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pharos Desk</title>
+  <meta name="description" content="Docs MCP onboarding log, on-chain alerts, failed-tx support. Pharos Pacific. Read-only." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    (function () {
+      var saved = localStorage.getItem("pharos-theme");
+      var theme = saved === "dark" || saved === "light" ? saved : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+  <style>
+    :root, html[data-theme="light"] {
+      color-scheme: light;
+      --bg: #ffffff; --elev: #f6f7f9; --card: #f7f8fa; --ink: #111111; --muted: #6b7280;
+      --line: #ececee; --line-2: #d9dbe0;
+      --brand: #0033ff; --brand-soft: #eef1ff;
+      --ok: #0a7d4f; --ok-soft: #e7f6ef; --warn: #c4312a; --warn-soft: #fdecea;
+      --gold: #9a5b00; --gold-soft: #fff4e5;
+      --surface: #ffffff; --chip: #111111; --chip-ink: #ffffff;
+      --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      --sans: Inter, system-ui, sans-serif;
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg: #0c0e14; --elev: #171a22; --card: #151821; --ink: #f4f6fb; --muted: #9aa3b5;
+      --line: #262a36; --line-2: #343946;
+      --brand: #6d86ff; --brand-soft: #1c2558;
+      --ok: #3dce8a; --ok-soft: #123226; --warn: #ff6b64; --warn-soft: #3a1818;
+      --gold: #e0a15a; --gold-soft: #3a2a14;
+      --surface: #10131a; --chip: #f4f6fb; --chip-ink: #111318;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 15px/1.55 var(--sans); color: var(--ink); background: var(--bg); }
+    a { color: var(--brand); }
+    .top { position: sticky; top: 0; z-index: 20; background: var(--bg); display: flex; align-items: center; gap: 18px; padding: 16px 40px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; gap: 10px; align-items: center; color: inherit; text-decoration: none; }
+    .logo { width: 22px; height: 22px; }
+    .brand b { font-size: 14px; letter-spacing: .12em; font-weight: 800; }
+    .brand em { font-style: normal; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .1em; margin-left: 8px; }
+    nav.tabs { display: flex; flex: 1; gap: 6px; justify-content: center; }
+    nav.tabs a { display: inline-flex; padding: 8px 14px; border-radius: 999px; color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 600; border: 1px solid var(--line-2); background: var(--surface); }
+    nav.tabs a.on { color: var(--chip-ink); background: var(--chip); border-color: var(--chip); }
+    .tools { display: flex; gap: 8px; margin-left: auto; }
+    .lang { display: flex; }
+    .lang button { border: 1px solid var(--line-2); background: var(--surface); color: var(--muted); padding: 7px 12px; cursor: pointer; font: 600 12px var(--sans); }
+    .lang button:first-child { border-radius: 999px 0 0 999px; }
+    .lang button:last-child { border-radius: 0 999px 999px 0; border-left: 0; }
+    .lang button.on { background: var(--chip); color: var(--chip-ink); border-color: var(--chip); }
+    main { max-width: 1180px; margin: 0 auto; padding: 48px 40px 20px; }
+    .kicker { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 600; }
+    h1 { font-size: clamp(40px, 6vw, 64px); line-height: .95; text-transform: uppercase; letter-spacing: -.04em; margin: 0 0 12px; color: var(--brand); }
+    .lead { color: var(--muted); max-width: 52ch; }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0; }
+    .tile { display: flex; flex-direction: column; gap: 12px; min-height: 200px; background: var(--card); border-radius: 8px; padding: 22px; color: inherit; text-decoration: none; }
+    .cat { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .tile h3 { margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; }
+    .tile p { margin: 0; color: var(--muted); font-size: 14px; flex: 1; }
+    .card { background: var(--card); border-radius: 8px; padding: 22px; margin-bottom: 16px; }
+    .card h2 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); margin: 0 0 14px; }
+    label { display: block; font-size: 11px; color: var(--muted); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .08em; }
+    input, select { width: 100%; padding: 11px 12px; border: 1px solid var(--line-2); border-radius: 999px; font: inherit; color: var(--ink); background: var(--surface); }
+    input.mono { font-family: var(--mono); font-size: 13px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 120px; }
+    .btn { margin-top: 14px; padding: 12px 16px; border: 0; border-radius: 999px; background: var(--brand); color: #fff; font: 600 14px var(--sans); cursor: pointer; }
+    .btn:disabled { opacity: .5; }
+    a.btn { display: inline-block; text-decoration: none; margin-left: 8px; }
+    a.btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
+    .status { margin-top: 12px; font-size: 13px; color: var(--muted); }
+    .status.err { color: var(--warn); }
+    .kind { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; text-transform: uppercase; }
+    .kind.ok { background: var(--ok-soft); color: var(--ok); }
+    .kind.thin { background: var(--gold-soft); color: var(--gold); }
+    .kind.broke { background: var(--warn-soft); color: var(--warn); }
+    .kind.transfer, .kind.call, .kind.gas, .kind.price { background: var(--brand-soft); color: var(--brand); }
+    .step { padding: 12px 0; border-top: 1px solid var(--line); }
+    .step p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .alert { padding: 10px 0; border-top: 1px solid var(--line); }
+    [hidden] { display: none !important; }
+    footer { color: var(--muted); font-size: 13px; padding: 8px 40px 48px; max-width: 1180px; margin: 0 auto; }
+    @media (max-width: 980px) {
+      .top, main, footer { padding-left: 16px; padding-right: 16px; }
+      .board { grid-template-columns: 1fr; }
+      nav.tabs { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#home">
+      <svg class="logo" viewBox="0 0 34 34" fill="none"><rect width="34" height="34" rx="8" fill="#0033ff"/><path d="M10 24V11.2h8.4c2.7 0 4.4 1.6 4.4 4 0 1.7-.9 3-2.4 3.6L23.4 24h-3.2l-2.7-5H13.2V24H10zm3.2-7.8h5c1.2 0 1.9-.6 1.9-1.5s-.7-1.5-1.9-1.5h-5v3z" fill="#fff"/></svg>
+      <span><b>PHAROS</b><em>DESK</em></span>
+    </a>
+    <nav class="tabs">
+      <a href="#onboard" data-tab="onboard">Onboard</a>
+      <a href="#alerts" data-tab="alerts">Alerts</a>
+      <a href="#support" data-tab="support">Support</a>
+    </nav>
+    <div class="tools">
+      <div class="lang" id="theme"><button type="button" data-theme="light">Aa</button><button type="button" data-theme="dark">A</button></div>
+      <div class="lang"><button data-lang="en">EN</button><button data-lang="pt">PT</button></div>
+    </div>
+  </header>
+  <main>
+    <p class="kicker">Agent Arena</p>
+    <h1 id="title"></h1>
+    <p class="lead" id="lead"></p>
+    <div class="board" data-panel="home">
+      <a class="tile" href="#onboard"><span class="cat">Docs MCP</span><h3>Onboard</h3><p id="t1"></p></a>
+      <a class="tile" href="#alerts"><span class="cat">Chain MCP</span><h3>Alerts</h3><p id="t2"></p></a>
+      <a class="tile" href="#support"><span class="cat">Chain MCP</span><h3>Support</h3><p id="t3"></p></a>
+    </div>
+
+    <section class="card" data-panel="onboard">
+      <h2 id="onForm"></h2>
+      <p class="lead" id="onBlurb"></p>
+      <button class="btn" id="onGo" type="button"></button>
+      <p class="status" id="onStatus"></p>
+    </section>
+    <section class="card" data-panel="onboard" id="onOut" hidden>
+      <h2 id="onLog"></h2>
+      <p id="onHead"></p>
+      <div id="onSteps"></div>
+    </section>
+
+    <section class="card" data-panel="alerts">
+      <h2 id="alForm"></h2>
+      <form id="alFormEl">
+        <div class="row">
+          <div>
+            <label for="alMode" id="alModeL"></label>
+            <select id="alMode">
+              <option value="transfer">transfer</option>
+              <option value="price">price</option>
+              <option value="call">call</option>
+            </select>
+          </div>
+          <div data-for="transfer">
+            <label for="alToken">Token</label>
+            <select id="alToken"><option>USDC</option><option>WPROS</option><option>LINK</option><option>WETH</option></select>
+          </div>
+          <div data-for="transfer">
+            <label for="alMin" id="alMinL"></label>
+            <input id="alMin" value="50" />
+          </div>
+          <div data-for="price">
+            <label for="alPrice" id="alPriceL"></label>
+            <input id="alPrice" value="0.05" />
+          </div>
+          <div data-for="price">
+            <label for="alSide" id="alSideL"></label>
+            <select id="alSide"><option value="above">above</option><option value="below">below</option></select>
+          </div>
+          <div data-for="call">
+            <label for="alContract" id="alContractL"></label>
+            <input class="mono" id="alContract" value="0xA5cA5Fbe34e444F366B373170541ec6902b0F75c" />
+          </div>
+          <div data-for="call">
+            <label for="alSelector" id="alSelectorL"></label>
+            <input class="mono" id="alSelector" placeholder="0x128acb08" />
+          </div>
+        </div>
+        <button class="btn" id="alGo" type="submit"></button>
+        <a class="btn ghost" id="alBot" href="https://t.me/pharosdesk_alert_bot" target="_blank" rel="noreferrer"></a>
+      </form>
+      <p class="status" id="alStatus"></p>
+    </section>
+    <section class="card" data-panel="alerts" id="alOut" hidden>
+      <h2 id="alLog"></h2>
+      <p id="alHead"></p>
+      <div id="alList"></div>
+    </section>
+
+    <section class="card" data-panel="support">
+      <h2 id="suForm"></h2>
+      <form id="suFormEl">
+        <label for="suTx" id="suTxL"></label>
+        <input class="mono" id="suTx" spellcheck="false" placeholder="0x…" />
+        <button class="btn" id="suGo" type="submit"></button>
+      </form>
+      <p class="status" id="suStatus"></p>
+    </section>
+    <section class="card" data-panel="support" id="suOut" hidden>
+      <h2 id="suLog"></h2>
+      <p id="suHead"></p>
+      <div id="suLines"></div>
+    </section>
+  </main>
+  <footer>Pacific 1672 · Docs MCP + Chain MCP · read-only</footer>
+  <script>
+    const I = {
+      en: {
+        title: "Desk",
+        lead: "Three Easy tasks: onboard with Docs MCP only, watch chain alerts, and explain a failed tx.",
+        t1: "Ask the official docs how to land on AI.PHAROS. Log where they go silent.",
+        t2: "Large USDC moves, a WPROS price cross, or one FaroSwap function.",
+        t3: "Paste a Pacific hash. Status, revert, who sent it.",
+        onForm: "Docs MCP onboarding",
+        onBlurb: "Six questions, Docs MCP only. Covered / thin / broke. No invented pages.",
+        onGo: "Run the log",
+        onLog: "Where it broke",
+        alForm: "On-chain alerts",
+        alModeL: "Condition",
+        alMinL: "Min amount",
+        alPriceL: "WPROS price (USDC)",
+        alSideL: "Side",
+        alContractL: "Contract",
+        alSelectorL: "Function (optional)",
+        alGo: "Scan window",
+        alBot: "Open pharosdesk_alert_bot",
+        alLog: "Alerts",
+        suForm: "Failed tx",
+        suTxL: "Transaction hash",
+        suGo: "Explain",
+        suLog: "Reading",
+        wait: "Talking to MCP…",
+      },
+      pt: {
+        title: "Mesa",
+        lead: "Três tasks Easy: onboard só com Docs MCP, alertas on-chain, e explicar tx que falhou.",
+        t1: "Pergunta na docs oficial como entrar no AI.PHAROS. Anota onde ela some.",
+        t2: "USDC grande, cruzamento do preço do WPROS, ou uma função do FaroSwap.",
+        t3: "Cola um hash da Pacific. Status, revert, quem mandou.",
+        onForm: "Onboarding Docs MCP",
+        onBlurb: "Seis perguntas, só Docs MCP. Coberto / frouxo / quebrou. Sem inventar página.",
+        onGo: "Rodar o log",
+        onLog: "Onde quebrou",
+        alForm: "Alertas on-chain",
+        alModeL: "Condição",
+        alMinL: "Mínimo",
+        alPriceL: "Preço WPROS (USDC)",
+        alSideL: "Lado",
+        alContractL: "Contrato",
+        alSelectorL: "Função (opcional)",
+        alGo: "Varrer janela",
+        alBot: "Abrir pharosdesk_alert_bot",
+        alLog: "Alertas",
+        suForm: "Tx que falhou",
+        suTxL: "Hash da transação",
+        suGo: "Explicar",
+        suLog: "Leitura",
+        wait: "Falando com o MCP…",
+      },
+    };
+    let lang = localStorage.getItem("pharos-lang") === "pt" ? "pt" : "en";
+    const $ = (id) => document.getElementById(id);
+    function apply() {
+      const t = I[lang];
+      document.documentElement.lang = lang;
+      $("title").textContent = t.title;
+      $("lead").textContent = t.lead;
+      $("t1").textContent = t.t1; $("t2").textContent = t.t2; $("t3").textContent = t.t3;
+      $("onForm").textContent = t.onForm; $("onBlurb").textContent = t.onBlurb; $("onGo").textContent = t.onGo; $("onLog").textContent = t.onLog;
+      $("alForm").textContent = t.alForm; $("alModeL").textContent = t.alModeL; $("alMinL").textContent = t.alMinL; $("alPriceL").textContent = t.alPriceL; $("alSideL").textContent = t.alSideL; $("alContractL").textContent = t.alContractL; $("alSelectorL").textContent = t.alSelectorL; $("alGo").textContent = t.alGo; $("alBot").textContent = t.alBot; $("alLog").textContent = t.alLog;
+      $("suForm").textContent = t.suForm; $("suTxL").textContent = t.suTxL; $("suGo").textContent = t.suGo; $("suLog").textContent = t.suLog;
+      document.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
+      const theme = document.documentElement.dataset.theme;
+      document.querySelectorAll("[data-theme]").forEach((b) => b.classList.toggle("on", b.dataset.theme === theme));
+    }
+    function showTab(tab) {
+      document.querySelectorAll("[data-panel]").forEach((el) => { el.hidden = el.dataset.panel !== tab && !(tab !== "home" && el.dataset.panel === tab); });
+      document.querySelectorAll("[data-panel=home]").forEach((el) => { el.hidden = tab !== "home"; });
+      document.querySelectorAll("[data-panel]").forEach((el) => {
+        const p = el.dataset.panel;
+        el.hidden = tab === "home" ? p !== "home" : p !== tab;
+        if (el.id === "onOut" || el.id === "alOut" || el.id === "suOut") el.hidden = true;
+      });
+      document.querySelectorAll("nav a[data-tab]").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
+    }
+    function route() {
+      const tab = (location.hash || "#home").slice(1) || "home";
+      showTab(["home","onboard","alerts","support"].includes(tab) ? tab : "home");
+    }
+    async function getJson(url, statusEl) {
+      statusEl.className = "status";
+      statusEl.textContent = I[lang].wait;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!res.ok || data.ok === false) throw new Error(data.error || res.statusText);
+      statusEl.textContent = data.calls ? data.calls : "";
+      return data;
+    }
+    $("onGo").onclick = async () => {
+      try {
+        const data = await getJson("/api/onboard?lang=" + lang, $("onStatus"));
+        $("onOut").hidden = false;
+        $("onHead").textContent = data.headline;
+        const steps = data.steps || [];
+        const gaps = data.gaps || [];
+        const log = steps.map((s, i) => {
+          const src = (s.sources || []).slice(0, 3).map((x) => `<a href="${x.url}" target="_blank" rel="noreferrer">${x.title}</a>`).join(" · ");
+          return `<div class="step"><span class="kind ${s.grade}">${i + 1} ${s.grade}</span><p><b>${s.tried || ""}</b></p><p>Query: ${s.query || s.title}</p><p>${(s.answer || "").slice(0, 700)}</p>${src ? `<p>${src}</p>` : ""}</div>`;
+        }).join("");
+        const gapHtml = gaps.map((g, i) => `<div class="step"><span class="kind broke">${i + 1}</span><p>Query: ${g.query}</p><p>${g.problem || ""}</p><p><b>${lang === "pt" ? "A docs deveria ter dito:" : "Docs should have said:"}</b> ${g.fix || ""}</p></div>`).join("");
+        $("onSteps").innerHTML = log + `<h2>${lang === "pt" ? "Buracos" : "Gaps"}</h2>` + gapHtml + `<h2>${lang === "pt" ? "O que rodou" : "What ran"}</h2><p>${data.ran || ""}</p>`;
+      } catch (e) { $("onStatus").className = "status err"; $("onStatus").textContent = e.message; }
+    };
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    function syncAlertFields() {
+      const mode = $("alMode").value;
+      document.querySelectorAll("[data-for]").forEach((el) => { el.hidden = el.dataset.for !== mode; });
+    }
+    $("alMode").onchange = syncAlertFields;
+    $("alFormEl").onsubmit = async (ev) => {
+      ev.preventDefault();
+      try {
+        const q = new URLSearchParams({ mode: $("alMode").value, token: $("alToken").value, min: $("alMin").value, price: $("alPrice").value, side: $("alSide").value, contract: $("alContract").value.trim(), selector: $("alSelector").value.trim(), lookback: "200", lang });
+        const data = await getJson("/api/alerts?" + q, $("alStatus"));
+        $("alOut").hidden = false;
+        $("alHead").textContent = data.headline;
+        const sent = data.delivery?.sent || 0;
+        const channels = (data.delivery?.channels || []).join(", ");
+        if (data.delivery?.error) $("alStatus").textContent = data.delivery.error;
+        else if (channels) $("alStatus").textContent = `${channels} · ${sent}`;
+        const quiet = lang === "pt" ? "Nada novo." : "Nothing new.";
+        $("alList").innerHTML = (data.alerts || []).map((a) =>
+          `<div class="alert"><span class="kind ${esc(a.kind)}">${esc(a.kind)}</span> ${esc(a.line)} <b>${esc(a.value || "")}</b>${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noreferrer">${a.tx ? "tx" : "pool"}</a>` : ""}</div>`
+        ).join("") || `<p class="status">${quiet}</p>`;
+      } catch (e) { $("alStatus").className = "status err"; $("alStatus").textContent = e.message; }
+    };
+    $("suFormEl").onsubmit = async (ev) => {
+      ev.preventDefault();
+      try {
+        const data = await getJson("/api/support?lang=" + lang + "&tx=" + encodeURIComponent($("suTx").value.trim()), $("suStatus"));
+        $("suOut").hidden = false;
+        $("suHead").textContent = data.headline;
+        $("suLines").innerHTML = (data.lines || []).map((l) => `<p>${l}</p>`).join("") + (data.link ? `<p><a href="${data.link}" target="_blank" rel="noreferrer">${data.hash}</a></p>` : "");
+      } catch (e) { $("suStatus").className = "status err"; $("suStatus").textContent = e.message; }
+    };
+    document.querySelectorAll("[data-lang]").forEach((b) => b.onclick = () => { lang = b.dataset.lang; localStorage.setItem("pharos-lang", lang); apply(); });
+    document.querySelectorAll("[data-theme]").forEach((b) => b.onclick = () => { document.documentElement.dataset.theme = b.dataset.theme; localStorage.setItem("pharos-theme", b.dataset.theme); apply(); });
+    window.addEventListener("hashchange", route);
+    apply(); route(); syncAlertFields();
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "pharos-desk",
+  "version": "1.0.0",
+  "description": "Pharos Desk: Docs MCP onboarding log, on-chain alerts, failed-tx support. Read-only.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "onboard": "node tasks/10-docs-mcp-onboarding/onboard.js",
+    "alerts": "node tasks/11-onchain-alert-bot/alert.js",
+    "support": "node tasks/12-dapp-support-agent/support.js",
+    "web": "node scripts/dev-server.js",
+    "test": "node --test test/onboard.test.js test/alerts.test.js test/support.test.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "viem": "^2.57.5"
+  }
+}
