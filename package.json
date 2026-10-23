@@ -7,8 +7,9 @@
   "scripts": {
     "alerts": "node tasks/11-onchain-alert-bot/alert.js",
     "support": "node tasks/12-dapp-support-agent/support.js",
+    "dry-run": "node tasks/13-dry-run-executor/dry-run.js",
     "web": "node scripts/dev-server.js",
-    "test": "node --test test/alerts.test.js test/support.test.js"
+    "test": "node --test test/alerts.test.js test/support.test.js test/dry-run.test.js"
   },
   "license": "MIT",
   "dependencies": {

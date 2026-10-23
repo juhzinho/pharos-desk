@@ -4,6 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import alerts from "../api/alerts.js";
 import support from "../api/support.js";
+import dryRun from "../api/dry-run.js";
 import { applyEnvFile } from "../lib/notify.js";
 import { checkPriceWatches, handleTelegramUpdates, publishTelegramCommands, publishTelegramProfile, pushMenu } from "../lib/telegram.js";
 
@@ -32,7 +33,7 @@ if (process.env.BOT_RUNTIME !== "cloud") {
 const PORT = Number(process.env.PORT ?? 3000);
 const ROOT = fileURLToPath(new URL("../public/", import.meta.url));
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml" };
-const ROUTES = { "/api/alerts": alerts, "/api/support": support };
+const ROUTES = { "/api/alerts": alerts, "/api/support": support, "/api/dry-run": dryRun };
 
 http
   .createServer(async (req, res) => {
