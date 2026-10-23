@@ -123,8 +123,8 @@
           <div>
             <label for="alMode" id="alModeL"></label>
             <select id="alMode">
-              <option value="transfer">transfer</option>
               <option value="price">price</option>
+              <option value="transfer">transfer</option>
               <option value="call">call</option>
             </select>
           </div>
@@ -138,7 +138,7 @@
           </div>
           <div data-for="price">
             <label for="alPrice" id="alPriceL"></label>
-            <input id="alPrice" value="0.05" />
+            <input id="alPrice" inputmode="decimal" placeholder="0.62" />
           </div>
           <div data-for="price">
             <label for="alSide" id="alSideL"></label>
@@ -156,6 +156,7 @@
         <button class="btn" id="alGo" type="submit"></button>
         <a class="btn ghost" id="alBot" href="https://t.me/pharosdesk_alert_bot" target="_blank" rel="noreferrer"></a>
       </form>
+      <p class="status" id="alHint"></p>
       <p class="status" id="alStatus"></p>
     </section>
     <section class="card" data-panel="alerts" id="alOut" hidden>
@@ -194,8 +195,9 @@
         alSideL: "Side",
         alContractL: "Contract",
         alSelectorL: "Function (optional)",
-        alGo: "Scan window",
+        alGo: "Save alert",
         alBot: "Open pharosdesk_alert_bot",
+        alSpot: (n) => `WPROS is ${n} USDC now. The line sits just past that, so the alert can still fire.`,
         alLog: "Alerts",
         suForm: "Failed tx",
         suTxL: "Transaction hash",
@@ -215,8 +217,9 @@
         alSideL: "Lado",
         alContractL: "Contrato",
         alSelectorL: "Função (opcional)",
-        alGo: "Varrer janela",
+        alGo: "Salvar alerta",
         alBot: "Abrir pharosdesk_alert_bot",
+        alSpot: (n) => `O WPROS está em ${n} USDC agora. A linha fica logo adiante, para o alerta ainda poder disparar.`,
         alLog: "Alertas",
         suForm: "Tx que falhou",
         suTxL: "Hash da transação",
@@ -226,6 +229,8 @@
       },
     };
     let lang = localStorage.getItem("pharos-lang") === "pt" ? "pt" : "en";
+    let spotNow = null;
+    let spotLines = { above: null, below: null };
     const $ = (id) => document.getElementById(id);
     function apply() {
       const t = I[lang];
@@ -234,6 +239,9 @@
       $("lead").textContent = t.lead;
       $("t2").textContent = t.t2; $("t3").textContent = t.t3;
       $("alForm").textContent = t.alForm; $("alModeL").textContent = t.alModeL; $("alMinL").textContent = t.alMinL; $("alPriceL").textContent = t.alPriceL; $("alSideL").textContent = t.alSideL; $("alContractL").textContent = t.alContractL; $("alSelectorL").textContent = t.alSelectorL; $("alGo").textContent = t.alGo; $("alBot").textContent = t.alBot; $("alLog").textContent = t.alLog;
+      $("alSide").options[0].text = lang === "pt" ? "acima" : "above";
+      $("alSide").options[1].text = lang === "pt" ? "abaixo" : "below";
+      if (spotNow != null) $("alHint").textContent = t.alSpot(Number(spotNow).toFixed(6));
       $("suForm").textContent = t.suForm; $("suTxL").textContent = t.suTxL; $("suGo").textContent = t.suGo; $("suLog").textContent = t.suLog;
       document.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
       const theme = document.documentElement.dataset.theme;
@@ -248,6 +256,7 @@
         if (el.id === "alOut" || el.id === "suOut") el.hidden = true;
       });
       document.querySelectorAll("nav a[data-tab]").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
+      if (tab === "alerts") loadSpot();
     }
     function route() {
       const tab = (location.hash || "#home").slice(1) || "home";
@@ -268,6 +277,22 @@
       document.querySelectorAll("[data-for]").forEach((el) => { el.hidden = el.dataset.for !== mode; });
     }
     $("alMode").onchange = syncAlertFields;
+    $("alPrice").addEventListener("input", () => { $("alPrice").dataset.touched = "1"; });
+    $("alSide").onchange = () => {
+      if ($("alPrice").dataset.touched === "1") return;
+      const next = spotLines[$("alSide").value];
+      if (next) $("alPrice").value = next;
+    };
+    async function loadSpot() {
+      try {
+        const data = await fetch("/api/alerts?mode=spot").then((res) => res.json());
+        if (!data.price) return;
+        spotNow = data.price;
+        spotLines = { above: data.above, below: data.below };
+        if ($("alPrice").dataset.touched !== "1" && data[$("alSide").value]) $("alPrice").value = data[$("alSide").value];
+        $("alHint").textContent = I[lang].alSpot(Number(data.price).toFixed(6));
+      } catch { /* the form still works if the quote fails */ }
+    }
     $("alFormEl").onsubmit = async (ev) => {
       ev.preventDefault();
       try {
@@ -279,9 +304,9 @@
         const channels = (data.delivery?.channels || []).join(", ");
         if (data.delivery?.error) $("alStatus").textContent = data.delivery.error;
         else if (sent > 0 && channels) $("alStatus").textContent = `${channels} · ${sent}`;
-        const quiet = data.mode === "price"
+        const quiet = data.armedNote || (data.mode === "price"
           ? (lang === "pt" ? "Nenhum alerta. O preço não cruzou a linha." : "No alert. The price did not cross the line.")
-          : (lang === "pt" ? "Nada novo nesta janela." : "Nothing new in this window.");
+          : (lang === "pt" ? "Nada novo nesta janela." : "Nothing new in this window."));
         $("alList").innerHTML = (data.alerts || []).map((a) =>
           `<div class="alert"><span class="kind ${esc(a.kind)}">${esc(a.kind)}</span> ${esc(a.line)} <b>${esc(a.value || "")}</b>${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noreferrer">${a.tx ? "tx" : "pool"}</a>` : ""}</div>`
         ).join("") || `<p class="status">${quiet}</p>`;

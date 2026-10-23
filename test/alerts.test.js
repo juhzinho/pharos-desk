@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decodeSlot0, inputSelector, normalizeSelector, parseMin, parseMode, parseThreshold, pickTransfers, priceCrossed, priceJustCrossed, priceStatus, resolveToken, sqrtToPrice, wprosUsdcPrice } from "../lib/alerts.js";
+import { armedNote, decodeSlot0, inputSelector, normalizeSelector, parseMin, parseMode, parseThreshold, pickTransfers, priceCrossed, priceJustCrossed, priceStatus, resolveToken, suggestLine, sqrtToPrice, wprosUsdcPrice } from "../lib/alerts.js";
 import { alertText, channelsFromEnv, deliver, freshAlerts, remember } from "../lib/notify.js";
 import { formatWatchList, parseFollowUp, parseHome, parseLangChoice, parseTelegramCommand } from "../lib/telegram.js";
 import { formatProsCard, prosFromCmc, renderPriceChart } from "../lib/pros.js";
@@ -33,6 +33,19 @@ test("a price check says which side of the line the spot is on", () => {
   assert.match(priceStatus(0.612664, 0.66, "above", false, "pt"), /abaixo de 0\.66/);
   assert.match(priceStatus(0.7, 0.66, "above", false, "en"), /already above/);
   assert.match(priceStatus(0.67, 0.66, "above", true, "en"), /just crossed/);
+});
+
+test("the suggested line sits one cent past the spot", () => {
+  assert.equal(suggestLine(0.612, "above"), "0.62");
+  assert.equal(suggestLine(0.612, "below"), "0.60");
+  assert.equal(suggestLine(0.616, "above"), "0.63");
+  assert.equal(suggestLine(0, "above"), null);
+});
+
+test("a saved alert says whether it is waiting or already on that side", () => {
+  assert.match(armedNote("price", 0.612, "0.62", "above", false, "en"), /messages once/);
+  assert.match(armedNote("price", 0.63, "0.62", "above", true, "pt"), /já está desse lado/);
+  assert.match(armedNote("transfer", null, "", "above", false, "en"), /new transfer/);
 });
 
 test("a price alert fires on the cross, not while it is already past the line", () => {
