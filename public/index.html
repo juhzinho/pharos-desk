@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pharos Desk</title>
-  <meta name="description" content="On-chain alerts, failed-tx support, and a dry-run before anything is signed. Pharos Pacific. Read-only." />
+  <meta name="description" content="On-chain alerts and failed-tx support. Pharos Pacific. Read-only." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -58,21 +58,25 @@
     h1 { font-size: clamp(40px, 6vw, 64px); line-height: .95; text-transform: uppercase; letter-spacing: -.04em; margin: 0 0 12px; color: var(--brand); }
     .lead { color: var(--muted); max-width: 52ch; }
     .board { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 28px 0; }
-    .tile { display: flex; flex-direction: column; gap: 12px; min-height: 200px; background: var(--card); border-radius: 8px; padding: 22px; color: inherit; text-decoration: none; }
+    .tile { display: flex; flex-direction: column; gap: 12px; min-height: 200px; background: var(--card); border-radius: 8px; padding: 22px; color: inherit; text-decoration: none; transition: transform .28s ease; }
+    .tile:hover { transform: translateY(-4px); }
+    .board .tile:nth-child(2) { animation-delay: .08s; }
     .cat { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
     .tile h3 { margin: 0; font-size: 20px; font-weight: 800; text-transform: uppercase; }
     .tile p { margin: 0; color: var(--muted); font-size: 14px; flex: 1; }
-    .card { background: var(--card); border-radius: 8px; padding: 22px; margin-bottom: 16px; }
+    .card { background: var(--card); border-radius: 8px; padding: 22px; margin-bottom: 16px; animation: rise .5s cubic-bezier(.2,.7,.2,1) both; }
     .card h2 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--brand); margin: 0 0 14px; }
     label { display: block; font-size: 11px; color: var(--muted); margin: 10px 0 4px; text-transform: uppercase; letter-spacing: .08em; }
     input, select { width: 100%; padding: 11px 12px; border: 1px solid var(--line-2); border-radius: 999px; font: inherit; color: var(--ink); background: var(--surface); }
     input.mono { font-family: var(--mono); font-size: 13px; }
     .row { display: flex; gap: 10px; flex-wrap: wrap; }
     .row > * { flex: 1; min-width: 120px; }
-    .btn { margin-top: 14px; padding: 12px 16px; border: 0; border-radius: 999px; background: var(--brand); color: #fff; font: 600 14px var(--sans); cursor: pointer; }
+    .btn { margin-top: 14px; padding: 12px 16px; border: 0; border-radius: 999px; background: var(--brand); color: #fff; font: 600 14px var(--sans); cursor: pointer; transition: transform .16s ease; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(1px) scale(.98); }
     .btn:disabled { opacity: .5; }
     a.btn { display: inline-block; text-decoration: none; margin-left: 8px; }
-    a.btn.ghost, button.btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); margin-left: 8px; }
+    a.btn.ghost { background: transparent; color: var(--brand); border: 1px solid var(--brand); }
     .status { margin-top: 12px; font-size: 13px; color: var(--muted); }
     .status.err { color: var(--warn); }
     .kind { font-size: 11px; font-weight: 700; border-radius: 6px; padding: 2px 7px; text-transform: uppercase; }
@@ -82,7 +86,16 @@
     .kind.transfer, .kind.call, .kind.gas, .kind.price { background: var(--brand-soft); color: var(--brand); }
     .step { padding: 12px 0; border-top: 1px solid var(--line); }
     .step p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
-    .alert { padding: 10px 0; border-top: 1px solid var(--line); }
+    .alert { padding: 10px 0; border-top: 1px solid var(--line); animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
+    .pop { animation: rise .45s cubic-bezier(.2,.7,.2,1) both; }
+    .status.busy { border-radius: 999px; background-image: linear-gradient(90deg, transparent, var(--brand-soft), transparent); background-size: 180px 100%; animation: shine 1.1s linear infinite; }
+    .tile { animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes rise { from { opacity: 0; translate: 0 12px; } to { opacity: 1; translate: 0 0; } }
+    @keyframes shine { from { background-position: -180px 0; } to { background-position: 220px 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .tile, .card, .alert, .pop, .status.busy { animation: none; }
+      .tile:hover, .btn:hover, .btn:active { transform: none; }
+    }
     [hidden] { display: none !important; }
     footer { color: var(--muted); font-size: 13px; padding: 8px 40px 48px; max-width: 1180px; margin: 0 auto; }
     @media (max-width: 980px) {
@@ -101,7 +114,6 @@
     <nav class="tabs">
       <a href="#alerts" data-tab="alerts">Alerts</a>
       <a href="#support" data-tab="support">Support</a>
-      <a href="#dry-run" data-tab="dry-run">Dry run</a>
     </nav>
     <div class="tools">
       <div class="lang" id="theme"><button type="button" data-theme="light">Aa</button><button type="button" data-theme="dark">A</button></div>
@@ -115,7 +127,6 @@
     <div class="board" data-panel="home">
       <a class="tile" href="#alerts"><span class="cat">Chain MCP</span><h3>Alerts</h3><p id="t2"></p></a>
       <a class="tile" href="#support"><span class="cat">Chain MCP</span><h3>Support</h3><p id="t3"></p></a>
-      <a class="tile" href="#dry-run"><span class="cat">Chain MCP</span><h3>Dry run</h3><p id="t4"></p></a>
     </div>
 
     <section class="card" data-panel="alerts">
@@ -181,62 +192,15 @@
       <p id="suHead"></p>
       <div id="suLines"></div>
     </section>
-
-    <section class="card" data-panel="dry-run">
-      <h2 id="drForm"></h2>
-      <form id="drFormEl">
-        <div class="row">
-          <div>
-            <label for="drSample" id="drSampleL"></label>
-            <select id="drSample">
-              <option value="pass">pass</option>
-              <option value="revert">revert</option>
-              <option value="gas">gas</option>
-              <option value="custom">custom</option>
-            </select>
-          </div>
-          <div>
-            <label for="drKind" id="drKindL"></label>
-            <select id="drKind">
-              <option value="transfer">transfer</option>
-              <option value="approve">approve</option>
-              <option value="native">native</option>
-            </select>
-          </div>
-          <div id="drTokenWrap">
-            <label for="drToken">Token</label>
-            <select id="drToken"><option>USDC</option><option>WPROS</option><option>LINK</option><option>WETH</option></select>
-          </div>
-          <div>
-            <label for="drAmount" id="drAmountL"></label>
-            <input id="drAmount" inputmode="decimal" value="1" />
-          </div>
-        </div>
-        <label for="drFrom" id="drFromL"></label>
-        <input class="mono" id="drFrom" spellcheck="false" value="0x15dDce897D76ac39c188AdE4D353711A60395315" />
-        <label for="drTo" id="drToL"></label>
-        <input class="mono" id="drTo" spellcheck="false" value="0x000000000000000000000000000000000000dEaD" />
-        <button class="btn" id="drGo" type="submit"></button>
-        <button class="btn ghost" id="drSend" type="button"></button>
-      </form>
-      <p class="status" id="drHint"></p>
-      <p class="status" id="drStatus"></p>
-    </section>
-    <section class="card" data-panel="dry-run" id="drOut" hidden>
-      <h2 id="drLog"></h2>
-      <p id="drHead"></p>
-      <div id="drList"></div>
-    </section>
   </main>
   <footer>Pacific 1672 · Chain MCP · read-only</footer>
   <script>
     const I = {
       en: {
         title: "Desk",
-        lead: "Watch a price or a large transfer, explain a failed tx, or simulate one before it is signed.",
+        lead: "Two Easy tasks: watch chain alerts, and explain a failed tx.",
         t2: "Large USDC moves, a WPROS price cross, or one FaroSwap function.",
         t3: "Paste a Pacific hash. I say if it failed, why, and what it tried to do.",
-        t4: "Simulates a transfer, shows the gas and the balances, and blocks the send when it fails.",
         alForm: "On-chain alerts",
         alModeL: "Condition",
         alMinL: "Min amount",
@@ -252,29 +216,13 @@
         suTxL: "Transaction hash",
         suGo: "Explain",
         suLog: "Reading",
-        drForm: "Dry run",
-        drSampleL: "Sample",
-        drKindL: "Action",
-        drAmountL: "Amount",
-        drFromL: "From",
-        drToL: "To",
-        drGo: "Simulate",
-        drSend: "Try to send",
-        drLog: "Result",
-        drHint: {
-          pass: "1 USDC from a public wallet that can pay the fee. Clear to sign. Nothing is sent.",
-          revert: "Same wallet, amount far above its USDC. The contract reverts and the send is blocked.",
-          gas: "1 USDC from the WPROS/USDC pool. The call succeeds, the pool has 0 PROS, so the send is blocked.",
-          custom: "Uses the fields below. Transfer, approve, or a plain PROS send.",
-        },
         wait: "Talking to MCP…",
       },
       pt: {
         title: "Mesa",
-        lead: "Alerta de preço ou transferência, explicar uma tx que falhou, ou simular antes de assinar.",
+        lead: "Duas tasks Easy: alertas on-chain e explicar tx que falhou.",
         t2: "USDC grande, cruzamento do preço do WPROS, ou uma função do FaroSwap.",
         t3: "Cola um hash da Pacific. Eu digo se falhou, por quê, e o que ela tentou fazer.",
-        t4: "Simula uma transferência, mostra o gás e os saldos, e trava o envio quando falha.",
         alForm: "Alertas on-chain",
         alModeL: "Condição",
         alMinL: "Mínimo",
@@ -290,21 +238,6 @@
         suTxL: "Hash da transação",
         suGo: "Explicar",
         suLog: "Leitura",
-        drForm: "Simulação",
-        drSampleL: "Exemplo",
-        drKindL: "Ação",
-        drAmountL: "Valor",
-        drFromL: "De",
-        drToL: "Para",
-        drGo: "Simular",
-        drSend: "Tentar enviar",
-        drLog: "Resultado",
-        drHint: {
-          pass: "1 USDC de uma carteira pública que paga a taxa. Pode assinar. Nada é enviado.",
-          revert: "A mesma carteira, valor muito acima do USDC dela. O contrato reverte e o envio trava.",
-          gas: "1 USDC do pool WPROS/USDC. A chamada passa, o pool tem 0 PROS, então o envio trava.",
-          custom: "Usa os campos abaixo. Transferência, aprovação, ou envio de PROS.",
-        },
         wait: "Falando com o MCP…",
       },
     };
@@ -317,14 +250,12 @@
       document.documentElement.lang = lang;
       $("title").textContent = t.title;
       $("lead").textContent = t.lead;
-      $("t2").textContent = t.t2; $("t3").textContent = t.t3; $("t4").textContent = t.t4;
+      $("t2").textContent = t.t2; $("t3").textContent = t.t3;
       $("alForm").textContent = t.alForm; $("alModeL").textContent = t.alModeL; $("alMinL").textContent = t.alMinL; $("alPriceL").textContent = t.alPriceL; $("alSideL").textContent = t.alSideL; $("alContractL").textContent = t.alContractL; $("alSelectorL").textContent = t.alSelectorL; $("alGo").textContent = t.alGo; $("alBot").textContent = t.alBot; $("alLog").textContent = t.alLog;
       $("alSide").options[0].text = lang === "pt" ? "acima" : "above";
       $("alSide").options[1].text = lang === "pt" ? "abaixo" : "below";
       if (spotNow != null) $("alHint").textContent = t.alSpot(Number(spotNow).toFixed(6));
       $("suForm").textContent = t.suForm; $("suTxL").textContent = t.suTxL; $("suGo").textContent = t.suGo; $("suLog").textContent = t.suLog;
-      $("drForm").textContent = t.drForm; $("drSampleL").textContent = t.drSampleL; $("drKindL").textContent = t.drKindL; $("drAmountL").textContent = t.drAmountL; $("drFromL").textContent = t.drFromL; $("drToL").textContent = t.drToL; $("drGo").textContent = t.drGo; $("drSend").textContent = t.drSend; $("drLog").textContent = t.drLog;
-      $("drHint").textContent = t.drHint[$("drSample").value] || t.drHint.custom;
       document.querySelectorAll("[data-lang]").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
       const theme = document.documentElement.dataset.theme;
       document.querySelectorAll("[data-theme]").forEach((b) => b.classList.toggle("on", b.dataset.theme === theme));
@@ -335,21 +266,23 @@
       document.querySelectorAll("[data-panel]").forEach((el) => {
         const p = el.dataset.panel;
         el.hidden = tab === "home" ? p !== "home" : p !== tab;
-        if (el.id === "alOut" || el.id === "suOut" || el.id === "drOut") el.hidden = true;
+        if (el.id === "alOut" || el.id === "suOut") el.hidden = true;
+        if (!el.hidden) { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; }
       });
       document.querySelectorAll("nav a[data-tab]").forEach((a) => a.classList.toggle("on", a.dataset.tab === tab));
       if (tab === "alerts") loadSpot();
     }
     function route() {
       const tab = (location.hash || "#home").slice(1) || "home";
-      showTab(["home","alerts","support","dry-run"].includes(tab) ? tab : "home");
+      showTab(["home","alerts","support"].includes(tab) ? tab : "home");
     }
     async function getJson(url, statusEl) {
-      statusEl.className = "status";
+      statusEl.className = "status busy";
       statusEl.textContent = I[lang].wait;
       const res = await fetch(url);
       const data = await res.json();
       if (!res.ok || data.ok === false) throw new Error(data.error || res.statusText);
+      statusEl.className = "status";
       statusEl.textContent = "";
       return data;
     }
@@ -390,9 +323,9 @@
         const quiet = data.mode === "price"
           ? (lang === "pt" ? "Nenhum alerta. O preço não cruzou a linha." : "No alert. The price did not cross the line.")
           : (lang === "pt" ? "Nada novo nesta janela." : "Nothing new in this window.");
-        $("alList").innerHTML = waiting ? "" : (data.alerts || []).map((a) =>
-          `<div class="alert"><span class="kind ${esc(a.kind)}">${esc(a.kind)}</span> ${esc(a.line)} <b>${esc(a.value || "")}</b>${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noreferrer">${a.tx ? "tx" : "pool"}</a>` : ""}</div>`
-        ).join("") || `<p class="status">${quiet}</p>`;
+        $("alList").innerHTML = waiting ? "" : (data.alerts || []).map((a, i) =>
+          `<div class="alert" style="animation-delay:${i * 70}ms"><span class="kind ${esc(a.kind)}">${esc(a.kind)}</span> ${esc(a.line)} <b>${esc(a.value || "")}</b>${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noreferrer">${a.tx ? "tx" : "pool"}</a>` : ""}</div>`
+        ).join("") || `<p class="status pop">${quiet}</p>`;
       } catch (e) { $("alStatus").className = "status err"; $("alStatus").textContent = e.message; }
     };
     $("suFormEl").onsubmit = async (ev) => {
@@ -401,69 +334,8 @@
         const data = await getJson("/api/support?lang=" + lang + "&tx=" + encodeURIComponent($("suTx").value.trim()), $("suStatus"));
         $("suOut").hidden = false;
         $("suHead").textContent = data.headline;
-        $("suLines").innerHTML = (data.lines || []).map((l) => `<p>${l}</p>`).join("") + (data.link ? `<p><a href="${data.link}" target="_blank" rel="noreferrer">${data.hash}</a></p>` : "");
+        $("suLines").innerHTML = (data.lines || []).map((l, i) => `<p class="pop" style="animation-delay:${i * 60}ms">${l}</p>`).join("") + (data.link ? `<p class="pop"><a href="${data.link}" target="_blank" rel="noreferrer">${data.hash}</a></p>` : "");
       } catch (e) { $("suStatus").className = "status err"; $("suStatus").textContent = e.message; }
-    };
-    const DRY = {
-      pass: { kind: "transfer", token: "USDC", amount: "1", from: "0x15dDce897D76ac39c188AdE4D353711A60395315", to: "0x000000000000000000000000000000000000dEaD" },
-      revert: { kind: "transfer", token: "USDC", amount: "999999999999", from: "0x15dDce897D76ac39c188AdE4D353711A60395315", to: "0x000000000000000000000000000000000000dEaD" },
-      gas: { kind: "transfer", token: "USDC", amount: "1", from: "0x912c9aDe24D44d8922f0866D8Dcb079f1363f647", to: "0x000000000000000000000000000000000000dEaD" },
-    };
-    function fillDry(sample) {
-      const row = DRY[sample];
-      if (!row) return;
-      $("drKind").value = row.kind;
-      $("drToken").value = row.token;
-      $("drAmount").value = row.amount;
-      $("drFrom").value = row.from;
-      $("drTo").value = row.to;
-      $("drTokenWrap").hidden = row.kind === "native";
-    }
-    function markDryCustom() {
-      if ($("drSample").value !== "custom") {
-        $("drSample").value = "custom";
-        $("drHint").textContent = I[lang].drHint.custom;
-      }
-    }
-    $("drSample").onchange = () => {
-      fillDry($("drSample").value);
-      $("drHint").textContent = I[lang].drHint[$("drSample").value] || I[lang].drHint.custom;
-    };
-    $("drKind").onchange = () => {
-      $("drTokenWrap").hidden = $("drKind").value === "native";
-      markDryCustom();
-    };
-    ["drToken", "drAmount", "drFrom", "drTo"].forEach((id) => {
-      $(id).addEventListener("input", markDryCustom);
-      $(id).addEventListener("change", markDryCustom);
-    });
-    async function runDry(execute) {
-      const sample = $("drSample").value;
-      const q = new URLSearchParams({ lang, execute: execute ? "1" : "0" });
-      if (DRY[sample]) q.set("sample", sample);
-      else {
-        q.set("kind", $("drKind").value);
-        q.set("token", $("drToken").value);
-        q.set("amount", $("drAmount").value.trim());
-        q.set("from", $("drFrom").value.trim());
-        q.set("to", $("drTo").value.trim());
-      }
-      const data = await getJson("/api/dry-run?" + q, $("drStatus"));
-      $("drOut").hidden = false;
-      $("drHead").textContent = data.headline;
-      const badge = data.verdict === "pass" ? "ok" : "broke";
-      $("drList").innerHTML = `<p><span class="kind ${badge}">${esc(data.verdict)}</span></p>`
-        + (data.lines || []).map((line) => `<p>${esc(line)}</p>`).join("")
-        + (data.unsigned ? `<p class="status">${esc(JSON.stringify(data.unsigned))}</p>` : "");
-    }
-    $("drFormEl").onsubmit = async (ev) => {
-      ev.preventDefault();
-      try { await runDry(false); }
-      catch (e) { $("drStatus").className = "status err"; $("drStatus").textContent = e.message; }
-    };
-    $("drSend").onclick = async () => {
-      try { await runDry(true); }
-      catch (e) { $("drStatus").className = "status err"; $("drStatus").textContent = e.message; }
     };
     document.querySelectorAll("[data-lang]").forEach((b) => b.onclick = () => { lang = b.dataset.lang; localStorage.setItem("pharos-lang", lang); apply(); });
     document.querySelectorAll("[data-theme]").forEach((b) => b.onclick = () => { document.documentElement.dataset.theme = b.dataset.theme; localStorage.setItem("pharos-theme", b.dataset.theme); apply(); });
