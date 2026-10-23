@@ -268,7 +268,7 @@
       const res = await fetch(url);
       const data = await res.json();
       if (!res.ok || data.ok === false) throw new Error(data.error || res.statusText);
-      statusEl.textContent = data.calls ? data.calls : "";
+      statusEl.textContent = "";
       return data;
     }
     const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -299,15 +299,16 @@
         const q = new URLSearchParams({ mode: $("alMode").value, token: $("alToken").value, min: $("alMin").value, price: $("alPrice").value, side: $("alSide").value, contract: $("alContract").value.trim(), selector: $("alSelector").value.trim(), lookback: "200", lang });
         const data = await getJson("/api/alerts?" + q, $("alStatus"));
         $("alOut").hidden = false;
-        $("alHead").textContent = data.headline;
         const sent = data.delivery?.sent || 0;
+        const waiting = !data.alerts?.length && data.armedNote;
+        $("alHead").textContent = waiting ? data.armedNote : data.headline;
         const channels = (data.delivery?.channels || []).join(", ");
         if (data.delivery?.error) $("alStatus").textContent = data.delivery.error;
         else if (sent > 0 && channels) $("alStatus").textContent = `${channels} · ${sent}`;
-        const quiet = data.armedNote || (data.mode === "price"
+        const quiet = data.mode === "price"
           ? (lang === "pt" ? "Nenhum alerta. O preço não cruzou a linha." : "No alert. The price did not cross the line.")
-          : (lang === "pt" ? "Nada novo nesta janela." : "Nothing new in this window."));
-        $("alList").innerHTML = (data.alerts || []).map((a) =>
+          : (lang === "pt" ? "Nada novo nesta janela." : "Nothing new in this window.");
+        $("alList").innerHTML = waiting ? "" : (data.alerts || []).map((a) =>
           `<div class="alert"><span class="kind ${esc(a.kind)}">${esc(a.kind)}</span> ${esc(a.line)} <b>${esc(a.value || "")}</b>${a.link ? ` · <a href="${esc(a.link)}" target="_blank" rel="noreferrer">${a.tx ? "tx" : "pool"}</a>` : ""}</div>`
         ).join("") || `<p class="status">${quiet}</p>`;
       } catch (e) { $("alStatus").className = "status err"; $("alStatus").textContent = e.message; }
